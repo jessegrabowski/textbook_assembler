@@ -48,7 +48,7 @@ def test_find_by_partial_name(fname, expected):
     all_files = get_pdf_names("textbook_assembler/tests/resources/pdfs")
     if expected is None:
         with pytest.raises(ValueError, match="Ambiguous partial file name"):
-            res = find_by_partial_name(fname, all_files)
+            find_by_partial_name(fname, all_files)
     else:
         res = find_by_partial_name(fname, all_files)
         assert res == expected

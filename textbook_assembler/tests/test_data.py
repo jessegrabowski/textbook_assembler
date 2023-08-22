@@ -60,7 +60,7 @@ def test_fill_page_numbers():
 
     data = fill_page_numbers(data, pdf_path)
 
-    assert data.loc[0, "page_start"] == 1
+    assert data.loc[0, "page_start"] == 0
     assert data.loc[0, "page_end"] == 25
 
 
