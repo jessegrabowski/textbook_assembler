@@ -42,7 +42,7 @@ def parse_args(args: Sequence[str] = None):
         "-b",
         type=str,
         required=False,
-        default="materials/bibtex.bib",
+        default="materials/citations.bib",
         help="Path a bibtex file containing reference information for the PDFs in the lesson plan",
     )
     parser.add_argument(
