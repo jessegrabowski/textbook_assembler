@@ -1,0 +1,6 @@
+pyyaml
+unidecode
+pypdf
+pylatex
+pandas
+bibtexparser
