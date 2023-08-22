@@ -16,12 +16,14 @@ pip install textbook-assembler
 To run the script with default arguments, use:
 
 ```text
-python -m textbook_assembler.main
+python -m textbook_assembler
 ```
 
 The following arguments are available:
 
 ```text
+python -m textbook_assembler --help
+
 options:
   -h, --help            show this help message and exit
   --lesson_path LESSON_PATH, -l LESSON_PATH

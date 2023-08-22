@@ -71,7 +71,3 @@ def main():
     args = parse_args(sys.argv[1:])
     kwargs = parsed_args_to_kwargs(args)
     assemble_textbook(**kwargs)
-
-
-if __name__ == "__main__":
-    main()
