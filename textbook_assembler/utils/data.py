@@ -20,38 +20,47 @@ _log = logging.getLogger("textbook_assembler")
 
 def load_input_data(path):
     data = pd.read_csv(path)
+    data = lowercase_columns(data)
     data = convert_date_column(data)
+    data = drop_empty_rows(data)
+
     return data
 
 
+def drop_empty_rows(data):
+    return data.dropna(axis=1, how="all")
+
+
 def convert_date_column(data):
-    col = [col for col in data.columns if col.lower() == "date"][0]
+    col = [col for col in data.columns if col == "date"][0]
     data[col] = data[col].map(dateutil.parser.parse)
     return data
 
 
 def clean_string_data(data):
-    cols = [col for col in data.columns if col.lower() in ["topic", "reference"]]
+    cols = [col for col in data.columns if col in ["topic", "reference"]]
     data[cols] = data[cols].applymap(unidecode_expect_ascii)
     return data
 
 
 def validate_column_names(data):
-    data_columns = set(data.columns.str.lower())
+    data_columns = set(data.columns)
     missing = set(EXPECTED_KEYS) - data_columns
     if len(missing) > 0:
         raise KeyError(f'PDF data is missing the following columns: {", ".join(missing)}')
 
     extra = data_columns - set(EXPECTED_KEYS)
     if len(extra) > 0:
-        raise KeyError(f'PDF data had unexpected columns: {", ".join(extra)}')
+        _log.warning(f'Dropping unexpected columns from lesson plan CSV: {", ".join(extra)}')
+        data.drop(columns=list(extra), inplace=True)
 
 
 def validate_datatypes(data):
     invalid_cols = {}
     for column in data.columns:
-        col_type = EXPECTED_DTYPES[column.lower()]
-        if data[column].dtype != col_type:
+        col_type = EXPECTED_DTYPES[column]
+
+        if data[column].dtype != col_type:  # and (col_type in (float, int)):
             try:
                 data[column].astype(col_type)
             except Exception as e:
@@ -60,7 +69,7 @@ def validate_datatypes(data):
     if len(invalid_cols) > 0:
         error_msg = "Found columns with unexpected datatypes that could not be converted: "
         for col, found_dtype in invalid_cols.items():
-            expected_dtype = EXPECTED_DTYPES[col.lower()]
+            expected_dtype = EXPECTED_DTYPES[col]
             error_msg += f"{col}, found: {found_dtype}, expected: {expected_dtype} "
 
         raise ValueError(error_msg.strip())
@@ -118,7 +127,6 @@ def load_and_process_data(path, pdf_path=None, reference_path=None, bibtex_path=
     validate_column_names(data)
     validate_datatypes(data)
     data = clean_string_data(data)
-    data = lowercase_columns(data)
 
     if reference_path:
         pdf_files = get_pdf_names(pdf_path)

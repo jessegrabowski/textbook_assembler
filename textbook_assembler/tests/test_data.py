@@ -24,9 +24,9 @@ def test_load_data_fails_if_columns_missing():
         data = load_and_process_data("textbook_assembler/tests/resources/csvs/test1.csv")
 
 
-def test_load_data_fails_if_extra_columns():
-    with pytest.raises(KeyError, match="PDF data had unexpected columns: extra_column"):
-        data = load_and_process_data("textbook_assembler/tests/resources/csvs/test2.csv")
+def test_extra_columns_dropped():
+    data = load_and_process_data("textbook_assembler/tests/resources/csvs/test2.csv")
+    assert "extra_column" not in data.columns
 
 
 def test_load_data_fails_with_bad_dtypes():
@@ -99,15 +99,23 @@ def test_add_bibtex_to_data():
         assert all([test_row[k] == referenced_bibtex[ref][k] for k in keys])
 
 
-def test_load_data():
+@pytest.mark.parametrize(
+    "data_path",
+    [
+        "textbook_assembler/tests/resources/csvs/test_complete.csv",
+        "textbook_assembler/tests/resources/csvs/test_complete_w_indexcol.csv",
+    ],
+    ids=["no_index", "index"],
+)
+def test_load_data(data_path):
     pdf_path = "textbook_assembler/tests/resources/pdfs"
     reference_path = "textbook_assembler/tests/resources/config/ref_to_file.yaml"
     bibtex_path = "textbook_assembler/tests/resources/bibtex/test2.bib"
-    data_path = "textbook_assembler/tests/resources/csvs/test_complete.csv"
     data = load_and_process_data(data_path, pdf_path, reference_path, bibtex_path)
 
     dtype_dict = data[EXPECTED_KEYS].dtypes
 
+    assert hasattr(data.date.dt, "day_name")
     assert all([x in data.columns.str.lower() for x in EXPECTED_KEYS])
     assert all([dtype == EXPECTED_DTYPES[col.lower()] for col, dtype in dtype_dict.items()])
     assert (
