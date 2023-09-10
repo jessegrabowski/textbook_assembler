@@ -47,6 +47,7 @@ def hyperlink(url, text):
 def generate_weekly_cover_sheet(week_number, date, data, bibtex_path, out_path=None):
     if out_path is None:
         out_path = ""
+
     bibtex_file = os.path.split(bibtex_path)[-1]
     shutil.copy(bibtex_path, os.path.join(out_path, bibtex_file))
 
@@ -55,7 +56,14 @@ def generate_weekly_cover_sheet(week_number, date, data, bibtex_path, out_path=N
     doc.preamble.append(Package("natbib"))
     doc.packages.append(Package("hyperref"))
 
-    doc.preamble.append(Command("title", f"Readings for Week {week_number}"))
+    topic = getattr(data, "topic", None)
+    title = f"Readings for Week {week_number}"
+
+    if topic is not None:
+        topic = topic.unique()
+        title = f"{title}: {topic[0]}"
+
+    doc.preamble.append(Command("title", title))
     doc.preamble.append(Command("date", prettify_date(date)))
     doc.append(NoEscape(r"\maketitle"))
 
@@ -77,7 +85,7 @@ def generate_weekly_cover_sheet(week_number, date, data, bibtex_path, out_path=N
     for row in data_to_list(data):
         doc.append(Command("bibentry", arguments=[row["reference"]]))
 
-    doc.append(Command("bibliographystyle", arguments=["alpha"]))
+    doc.append(Command("bibliographystyle", arguments=["aer"]))
     doc.append(Command("bibliography", arguments=[NoEscape(bibtex_file.replace(".bib", ""))]))
 
     filepath = os.path.join(out_path, f"week_{week_number}_coversheet")
